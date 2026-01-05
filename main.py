@@ -16,6 +16,7 @@ def check_inventory():
     inventory = driver.find_elements(By.CSS_SELECTOR, ".product.unlocked.enabled")
     highest_item = None
     highest_price = 0
+    cookies_element = driver.find_element(By.ID, "cookies")
     total_cookies = int(cookies_element.text.split(' ')[0])
     for item in inventory:
         price = int(item.find_element(By.CLASS_NAME, "price").text)
@@ -34,27 +35,30 @@ lang_select = driver.find_element(By.ID, "langSelect-EN")
 lang_select.click()
 
 cookie = driver.find_element(By.ID, "bigCookie")
-cookies_element = driver.find_element(By.ID, "cookies")
-
-
 last_check = time.time()
 game_on = True
 
 while game_on:
-
-    cookie.click()
+    try:
+        cookie.click()
+    except:
+        # Re-fetch if stale
+        cookie = driver.find_element(By.ID, "bigCookie")
+        cookie.click()
 
     current_time = time.time()
-     # check if 5 seconds have passed
-    if current_time - last_check >= 10:
+
+    if current_time - last_check >= 5:
         check_inventory()
         last_check = current_time
 
     if current_time - start_time >= 300:
         game_on = False
 
-driver.close()
+
+cookies_element = driver.find_element(By.ID, "cookies")
 cookies_per_second = cookies_element.text.split(' ')[-1]
+driver.close()
 print(f"cookies/sec : {cookies_per_second} ")
 
 # closes tab
